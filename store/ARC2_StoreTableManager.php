@@ -63,11 +63,11 @@ class ARC2_StoreTableManager extends ARC2_Store
         $index_code = $indexes ? 'KEY '.implode(', KEY ', $indexes).', ' : '';
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().$suffix.' (
-        t mediumint UNSIGNED NOT NULL,
-        s mediumint UNSIGNED NOT NULL,
-        p mediumint UNSIGNED NOT NULL,
-        o mediumint UNSIGNED NOT NULL,
-        o_lang_dt mediumint UNSIGNED NOT NULL,
+        t INT(10) UNSIGNED NOT NULL,
+        s INT(10) UNSIGNED NOT NULL,
+        p INT(10) UNSIGNED NOT NULL,
+        o INT(10) UNSIGNED NOT NULL,
+        o_lang_dt INT(10) UNSIGNED NOT NULL,
         o_comp char(35) NOT NULL,                   /* normalized value for ORDER BY operations */
         s_type tinyint(1) NOT NULL default 0,       /* uri/bnode => 0/1 */
         o_type tinyint(1) NOT NULL default 0,       /* uri/bnode/literal => 0/1/2 */
@@ -96,8 +96,8 @@ class ARC2_StoreTableManager extends ARC2_Store
     {
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().'g2t (
-        g mediumint UNSIGNED NOT NULL,
-        t mediumint UNSIGNED NOT NULL,
+        g INT(10) UNSIGNED NOT NULL,
+        t INT(10) UNSIGNED NOT NULL,
         UNIQUE KEY gt (g,t), KEY tg (t,g)
       ) '.$this->getTableOptionsCode().'
     ';
@@ -120,7 +120,7 @@ class ARC2_StoreTableManager extends ARC2_Store
     {
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().'id2val (
-        id mediumint UNSIGNED NOT NULL AUTO_INCREMENT,
+        id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
         misc tinyint(1) NOT NULL default 0,
         val text NOT NULL,
         val_type tinyint(1) NOT NULL default 0,     /* uri/bnode/literal => 0/1/2 */
@@ -149,7 +149,7 @@ class ARC2_StoreTableManager extends ARC2_Store
         $indexes = 'UNIQUE KEY (id), KEY vh (val_hash)';
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().'s2val (
-        id mediumint UNSIGNED NOT NULL,
+        id INT(10) UNSIGNED NOT NULL,
         misc tinyint(1) NOT NULL default 0,
         val_hash char(32) NOT NULL,
         val text NOT NULL,
@@ -179,7 +179,7 @@ class ARC2_StoreTableManager extends ARC2_Store
         }
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().'o2val (
-        id mediumint UNSIGNED NOT NULL,
+        id INT(10) UNSIGNED NOT NULL,
         misc tinyint(1) NOT NULL default 0,
         val_hash char(32) NOT NULL,
         val text NOT NULL,
