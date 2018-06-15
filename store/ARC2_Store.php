@@ -883,4 +883,48 @@ class ARC2_Store extends ARC2_Class
         fwrite($fp, date('Y-m-d\TH:i:s\Z', time()).' : '.$q.''."\n\n");
         fclose($fp);
     }
+
+    /*
+     * Transaction support
+     * FYI: https://github.com/semsol/arc2/issues/110
+     *
+     * Functions only work when using PDO as adapter.
+     * When calling these with mysqli an exception will be thrown.
+     */
+
+    public function beginTransaction()
+    {
+        if ('pdo' !== $this->db->getAdapterName()) {
+            throw new \Exception('Please use the PDO adapter if you want transaction support.');
+        }
+
+        $this->db->beginTransaction();
+    }
+
+    public function inTransaction()
+    {
+        if ('pdo' !== $this->db->getAdapterName()) {
+            throw new \Exception('Please use the PDO adapter if you want transaction support.');
+        }
+
+        return $this->db->inTransaction();
+    }
+
+    public function commit()
+    {
+        if ('pdo' !== $this->db->getAdapterName()) {
+            throw new \Exception('Please use the PDO adapter if you want transaction support.');
+        }
+
+        return $this->db->commit();
+    }
+
+    public function rollback()
+    {
+        if ('pdo' !== $this->db->getAdapterName()) {
+            throw new \Exception('Please use the PDO adapter if you want transaction support.');
+        }
+
+        return $this->db->rollback();
+    }
 }

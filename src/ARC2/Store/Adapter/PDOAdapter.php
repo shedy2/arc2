@@ -16,6 +16,8 @@ namespace ARC2\Store\Adapter;
  */
 class PDOAdapter extends AbstractAdapter
 {
+    protected $transactionCounter;
+
     public function checkRequirements()
     {
         if (false == \extension_loaded('pdo_mysql')) {
@@ -321,5 +323,47 @@ class PDOAdapter extends AbstractAdapter
 
         $affectedRows = $this->db->exec($sql);
         return $affectedRows;
+    }
+
+    /*
+     * Transaction related
+     *
+     * the following implementation prevents problems, if you have sub-transactions.
+     * thanks to http://php.net/manual/de/pdo.begintransaction.php#109753
+     */
+
+    public function beginTransaction()
+    {
+        // if not already in a transaction
+        if (false === $this->db->inTransaction()) {
+            if (0 == $this->transactionCounter) {
+                return $this->db->beginTransaction();
+            }
+            return $this->transactionCounter >= 0;
+        }
+    }
+
+    public function inTransaction()
+    {
+        return $this->db->inTransaction();
+    }
+
+    public function commit()
+    {
+        if(0 >= --$this->transactionCounter) {
+            return $this->db->commit();
+        }
+        return $this->transactionCounter >= 0;
+    }
+
+    public function rollback()
+    {
+        if($this->transactionCounter >= 0) {
+            $this->transactionCounter = 0;
+            return $this->db->rollback();
+        }
+
+        $this->transactionCounter = 0;
+        return false;
     }
 }
