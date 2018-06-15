@@ -205,16 +205,27 @@ class ARC2_Store extends ARC2_Class
             return 1;
         }
         $tbl = $this->getTablePrefix().'o2val';
-        $this->db->simpleQuery('CREATE FULLTEXT INDEX vft ON '.$tbl.'(val(128))');
+
+        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
+        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
+        // We execute this only on MySQL 5.6 or higher.
+        if ('mysql' == $this->db->getDBSName() && '5.6' <= $this->db->getServerVersion()) {
+            $this->db->simpleQuery('CREATE FULLTEXT INDEX vft ON '.$tbl.'(val(128))');
+        }
     }
 
     public function disableFulltextSearch()
     {
-        if (!$this->hasFulltextIndex()) {
-            return 1;
+        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
+        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
+        // We execute this only on MySQL 5.6 or higher.
+        if ('mysql' == $this->db->getDBSName() && '5.6' <= $this->db->getServerVersion()) {
+            if (!$this->hasFulltextIndex()) {
+                return 1;
+            }
+            $tbl = $this->getTablePrefix().'o2val';
+            $this->db->simpleQuery('DROP INDEX vft ON '.$tbl);
         }
-        $tbl = $this->getTablePrefix().'o2val';
-        $this->db->simpleQuery('DROP INDEX vft ON '.$tbl);
     }
 
     public function countDBProcesses()

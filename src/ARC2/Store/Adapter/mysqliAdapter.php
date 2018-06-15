@@ -175,7 +175,7 @@ class mysqliAdapter extends AbstractAdapter
         );
 
         return 1 == $res
-            ? sprintf('%02d-%02d-%02d', $matches[1], $matches[2], $matches[3])
+            ? sprintf('%02d.%02d.%02d', $matches[1], $matches[2], $matches[3])
             : '00-00-00';
     }
 

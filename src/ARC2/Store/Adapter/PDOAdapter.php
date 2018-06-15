@@ -203,6 +203,18 @@ class PDOAdapter extends AbstractAdapter
             $return = null;
         }
 
+        // if SERVER_VERSION gives no information, try CLIENT_VERSION
+        if (null === $return) {
+            $clientVersion = strtolower($this->db->getAttribute(\PDO::ATTR_CLIENT_VERSION));
+            if (false !== strpos($clientVersion, 'mariadb')) {
+                $return = 'mariadb';
+            } elseif (false !== strpos($clientVersion, 'mysql')) {
+                $return = 'mysql';
+            } else {
+                $return = null;
+            }
+        }
+
         return $return;
     }
 
@@ -216,15 +228,9 @@ class PDOAdapter extends AbstractAdapter
      */
     public function getServerVersion()
     {
-        $res = preg_match(
-            "/([0-9]+)\.([0-9]+)\.([0-9]+)/",
-            $this->getServerInfo(),
-            $matches
-        );
+        $v = $this->fetchRow('select version()');
 
-        return 1 == $res
-            ? sprintf('%02d-%02d-%02d', $matches[1], $matches[2], $matches[3])
-            : '00-00-00';
+        return $v['version()'];
     }
 
     public function getErrorCode()

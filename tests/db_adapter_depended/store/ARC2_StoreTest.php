@@ -20,6 +20,7 @@ class ARC2_StoreTest extends ARC2_TestCase
         }
 
         // fresh setup of ARC2
+        $this->fixture->drop();
         $this->fixture->setup();
     }
 
@@ -293,7 +294,17 @@ XML;
         $res2 = $this->fixture->disableFulltextSearch();
 
         $this->assertNull($res1);
-        $this->assertEquals(1, $res2);
+
+        // expect a different result, depending on the MySQL version, because
+        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
+        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
+        // We execute this only on MySQL 5.6 or higher.
+        if ('mysql' == $this->fixture->getDBObject()->getDBSName()
+            && '5.5' >= $this->fixture->getDBObject()->getServerVersion()) {
+            $this->assertNull($res2);
+        } else {
+            $this->assertEquals(1, $res2);
+        }
 
         $this->assertEquals(0, $this->fixture->a['db_object']->getErrorCode());
         $this->assertEquals('', $this->fixture->a['db_object']->getErrorMessage());
@@ -306,8 +317,7 @@ XML;
     // just check pattern
     public function testGetDBVersion()
     {
-        $result = preg_match('/[0-9]{2}-[0-9]{2}-[0-9]{2}/', $this->fixture->getDBVersion(), $match);
-        $this->assertEquals(1, $result);
+        $this->assertEquals(1, preg_match('/\d{1,2}.\d{1,2}.\d{1,2}/', $this->fixture->getDBVersion()));
     }
 
     /*
