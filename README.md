@@ -58,6 +58,12 @@ Please have a look into [SPARQL-support.md](doc/SPARQL-support.md) to see which 
 
 In this section you find known problems with MariaDB or MySQL, regarding certain features. E.g. MySQL 5.5 doesn't allow FULLTEXT indexes in InnoDB. We try to encapsulate any differences in the DB adapters, so that you don't have to care about them. In case you run into problems, this section might be of help.
 
+#### MySQL 5.5
+
+MySQL 5.5 does not support FULLTEXT for InnoDB ([Source](https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html)):
+
+> Full-text searches are supported for MyISAM tables only. (In MySQL 5.6 and up, they can also be used with InnoDB tables.)
+
 #### MySQL 8.0 and mysqli
 
 Using mysqli with MySQL 8.0 as backend throws the following exception:
