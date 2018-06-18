@@ -293,16 +293,18 @@ XML;
         $res1 = $this->fixture->enableFulltextSearch();
         $res2 = $this->fixture->disableFulltextSearch();
 
-        $this->assertNull($res1);
-
         // expect a different result, depending on the MySQL version, because
         // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
         // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
-        // We execute this only on MySQL 5.6 or higher.
-        if ('mysql' == $this->fixture->getDBObject()->getDBSName()
-            && '5.5' >= $this->fixture->getDBObject()->getServerVersion()) {
-            $this->assertNull($res2);
+        // MariaDB is also affected.
+        if ((
+                'mysql' == $this->fixture->getDBObject()->getDBSName()
+                && version_compare('5.6', $this->fixture->getDBObject()->getServerVersion(), '>')
+            ) || 'mariadb' == $this->fixture->getDBObject()->getDBSName()) {
+            $this->assertEquals(0, $res1);
+            $this->assertEquals(0, $res2);
         } else {
+            $this->assertEquals(1, $res1);
             $this->assertEquals(1, $res2);
         }
 
