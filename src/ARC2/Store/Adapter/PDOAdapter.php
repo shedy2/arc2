@@ -16,7 +16,7 @@ namespace ARC2\Store\Adapter;
  */
 class PDOAdapter extends AbstractAdapter
 {
-    protected $transactionCounter;
+    protected $transactionCounter = 0;
 
     public function checkRequirements()
     {
@@ -190,6 +190,16 @@ class PDOAdapter extends AbstractAdapter
         return $this->db->query('SELECT CONNECTION_ID()')->fetch(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Exclusivly to PDO adapter. Returns current active driver name.
+     *
+     * @return string Depending on the database system, it returns something like "mysql" or "pgsql"
+     */
+    public function getDriverName()
+    {
+        return $this->db->getAttribute(\PDO::ATTR_DRIVER_NAME);
+    }
+
     public function getDBSName()
     {
         if (null == $this->db) {
@@ -265,6 +275,16 @@ class PDOAdapter extends AbstractAdapter
         return $rowCount;
     }
 
+    /**
+     * Returns a list of queries, grouped by the function they were used.
+     *
+     * @return array
+     */
+    public function getQueries()
+    {
+        return $this->queries;
+    }
+
     public function getStoreName()
     {
         if (isset($this->configuration['store_name'])) {
@@ -330,40 +350,104 @@ class PDOAdapter extends AbstractAdapter
      *
      * the following implementation prevents problems, if you have sub-transactions.
      * thanks to http://php.net/manual/de/pdo.begintransaction.php#109753
+     *
+     * Code also inspired by https://www.kennynet.co.uk/2008/12/02/php-pdo-nested-transactions/
      */
 
+    /**
+     * Starts a transaction, if not already started.
+     *
+     * If a transaction is already open, it creates a new SAVEPOINT LEVEL.
+     * FYI: https://dev.mysql.com/doc/refman/5.5/en/savepoint.html
+     */
     public function beginTransaction()
     {
         // if not already in a transaction
-        if (false === $this->db->inTransaction()) {
-            if (0 == $this->transactionCounter) {
-                return $this->db->beginTransaction();
-            }
-            return $this->transactionCounter >= 0;
+        if (false == $this->transactionsAreNestable() || false === $this->db->inTransaction()) {
+            // in case one uses transactions, we set AUTO_COMMIT of the server to false to fully
+            // use transaction capabilities, without it, it does not really makes sense.
+            //
+            // for more information: https://dev.mysql.com/doc/refman/5.5/en/innodb-autocommit-commit-rollback.html
+            $this->db->exec('SET autocommit=0;');
+
+            $this->db->beginTransaction();
+
+        // if a transaction is already open, create a SAVEPOINT, if available
+        } elseif ($this->transactionsAreNestable() && $this->db->inTransaction()) {
+            // save query
+            $this->queries[] = [
+                'query' => "SAVEPOINT LEVEL{$this->transactionCounter}",
+                'by_function' => 'beginTransaction'
+            ];
+            $this->db->exec("SAVEPOINT LEVEL{$this->transactionCounter}");
         }
+
+        ++$this->transactionCounter;
     }
 
     public function inTransaction()
     {
-        return $this->db->inTransaction();
+        return 0 < $this->transactionCounter;
     }
 
+    /**
+     * Checks, if transactions are nestable. That is the case, if driver name is "mysql".
+     *
+     * @return bool True, if driver name is "mysql", because it supports nesting, false otherwise.
+     */
+    public function transactionsAreNestable()
+    {
+        return in_array($this->getDriverName(), ['mysql']);
+    }
+
+    /**
+     * Commits latest changes to the DB. Careful, with DBS like MySQL datastructure changes provoke an
+     * implicit COMMIT.
+     *
+     * If a nested transaction is to be commited, the related SAVEPOINT gets released (if feature is available).
+     * If not available, nothing happens.
+     */
     public function commit()
     {
-        if(0 >= --$this->transactionCounter) {
-            return $this->db->commit();
+        --$this->transactionCounter;
+
+        // lowest level, therefore COMMIT changes
+        if (false === $this->transactionsAreNestable() || 0 == $this->transactionCounter) {
+            $this->db->commit();
+
+        // inside a nested transaction, therefore (if available) release related SAVEPOINT
+        } elseif ($this->transactionsAreNestable() && 0 < $this->transactionCounter) {
+            // save query
+            $this->queries[] = [
+                'query' => "RELEASE SAVEPOINT LEVEL{$this->transactionCounter}",
+                'by_function' => 'commit'
+            ];
+            $this->db->exec("RELEASE SAVEPOINT LEVEL{$this->transactionCounter}");
         }
-        return $this->transactionCounter >= 0;
     }
 
     public function rollback()
     {
-        if($this->transactionCounter >= 0) {
-            $this->transactionCounter = 0;
-            return $this->db->rollback();
-        }
+        --$this->transactionCounter;
 
-        $this->transactionCounter = 0;
-        return false;
+        // lowest level, therefore ROLLBACK changes
+        if (false === $this->transactionsAreNestable() || 0 == $this->transactionCounter) {
+            $this->db->rollback();
+            // set AUTO_COMMIT behavior back to normal.
+            $this->db->exec('SET autocommit=1;');
+
+        // inside a nested transaction, therefore (if available) release related SAVEPOINT
+        } elseif ($this->transactionsAreNestable() && 0 < $this->transactionCounter) {
+            // save query
+            $this->queries[] = [
+                'query' => "ROLLBACK TO SAVEPOINT LEVEL{$this->transactionCounter}",
+                'by_function' => 'rollback'
+            ];
+            try {
+                $this->db->exec("ROLLBACK TO SAVEPOINT LEVEL{$this->transactionCounter}");
+            } catch (\PDOException $e) {
+                $this->rollback();
+            }
+        }
     }
 }

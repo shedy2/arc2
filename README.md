@@ -56,6 +56,36 @@ Version `3.x` introduces new features and develops the backend further. Unfortun
 
 Please have a look into [SPARQL-support.md](doc/SPARQL-support.md) to see which SPARQL 1.0/1.1 features are currently supported.
 
+### Transaction support
+
+With the PDO adapter, ARC2 provides extended transaction support. This means, that one can also use nested transactions. This is very helpful, if the ARC2 database connection is shared by different applications in one session. Our adapter allows the creation of transactions as you need it without the need to maintain them yourself.
+
+**Short example:**
+
+```php
+$store = ARC2::getStore(array(
+    'db_name' => 'testdb',
+    'db_user' => 'root',
+    'db_pwd'  => '',
+    'db_host' => '127.0.0.1',
+    // use PDO, because mysqli adapter does not support transactions!
+    'db_adapter' => 'pdo',
+    'db_pdo_protocol' => 'mysql'
+));
+
+try {
+    $store->beginTransaction();
+
+    // do something
+
+    $store->commit();
+} catch (\Exception $e) {
+    $store->rollback();
+}
+```
+
+Transaction support is implemented using PDOs own implementations as well as use queries to setup the server, e.g. by sending `SET autocommit=0;` ([source](https://dev.mysql.com/doc/refman/5.5/en/innodb-autocommit-commit-rollback.html)). Also important: transactions can be used without any setup, just call `beginTransaction`, `commit`, `inTransaction` or `rollback` as usual.
+
 ### Known problems/restrictions with database systems
 
 In this section you find known problems with MariaDB or MySQL, regarding certain features. E.g. MySQL 5.5 doesn't allow FULLTEXT indexes in InnoDB. We try to encapsulate any differences in the DB adapters, so that you don't have to care about them. In case you run into problems, this section might be of help.
