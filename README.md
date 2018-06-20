@@ -16,7 +16,7 @@ Package available on [Composer](https://packagist.org/packages/semsol/arc2).
 If you're using Composer to manage dependencies, you can use
 
 ```bash
-composer require semsol/arc2:2.4.*
+composer require semsol/arc2:3.*
 ```
 
 ### Branches
@@ -85,9 +85,11 @@ $store = ARC2::getStore(array(
     'db_user' => 'root',
     'db_pwd'  => '',
     'db_host' => '127.0.0.1',
+    'db_adapter' => 'pdo',
+    'db_pdo_protocol' => 'mysql',
     // ...
-    'cache_enabled' => true
-    'cache_instance' => new ArrayCache() // <=== example Cache instance, managed by yourself
+    'cache_enabled' => true,
+    'cache_instance' => new ArrayCache(), // <=== example Cache instance, managed by yourself
 ));
 ```
 
