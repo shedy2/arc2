@@ -142,4 +142,22 @@ class CachedPDOAdapter extends PDOAdapter
 
         return parent::exec($sql);
     }
+
+    public function rollback()
+    {
+        $this->cache->clear();
+
+        parent::rollback();
+    }
+
+    /**
+     * If object is to be destroyed, but we are still in a transaction, clear cache to make
+     * sure, no outdated items are stored.
+     */
+    public function __destruct()
+    {
+        if ($this->inTransaction()) {
+            $this->cache->clear();
+        }
+    }
 }

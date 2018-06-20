@@ -15,7 +15,7 @@ class PDOAdapterTest extends ARC2_TestCase
             $this->markTestSkipped('Only runs when DB_ADAPTER=pdo.');
         }
 
-        $this->fixture = new PDOAdapter($this->dbConfig);
+        $this->fixture = $this->getInstance();
         $this->fixture->connect();
 
         // remove all tables
@@ -23,6 +23,11 @@ class PDOAdapterTest extends ARC2_TestCase
         foreach($tables as $table) {
             $this->fixture->simpleQuery('DROP TABLE '. $table['Tables_in_'.$this->dbConfig['db_name']]);
         }
+    }
+
+    protected function getInstance()
+    {
+        return new PDOAdapter($this->dbConfig);
     }
 
     /*
@@ -245,6 +250,79 @@ class PDOAdapterTest extends ARC2_TestCase
         $this->fixture->rollback();
 
         // we expect NO content of table transactionTest
+        $this->assertEquals(0, \count($this->fixture->fetchList('SELECT * FROM transactionTest')));
+    }
+
+    /**
+     * If transactions are used together with the cache, we have to make sure, that the cache
+     * gets cleared, if a transaction does not get finished
+     */
+    public function testTransactionCacheInteractionConnectionClosed()
+    {
+        // make sure table is not there
+        $this->assertEquals(0, \count($this->fixture->fetchList('SHOW TABLES LIKE "transactionTest"')));
+
+        /*
+         * transaction started: level 0
+         */
+        $this->fixture->beginTransaction();
+        $this->assertTrue($this->fixture->inTransaction());
+
+        // create table
+        $this->fixture->simpleQuery('CREATE TABLE transactionTest (
+            id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(30) NOT NULL
+        )');
+
+        // table created?
+        $this->assertEquals(1, \count($this->fixture->fetchList('SHOW TABLES LIKE "transactionTest"')));
+
+        $this->fixture->simpleQuery('INSERT INTO transactionTest (id, name) VALUES (1, "baz-level0")');
+
+        $this->assertEquals(1, \count($this->fixture->fetchList('SELECT * FROM transactionTest')));
+
+        // at this point we created a table and added 1 row
+        // 1 transaction is still open
+        // we close the connection by nulling the PDO adapter object.
+
+        $this->fixture = null;
+
+        // reconnect and check DB state
+        $this->fixture = $this->getInstance();
+        $this->fixture->connect();
+        $this->assertEquals(0, \count($this->fixture->fetchList('SELECT * FROM transactionTest')));
+    }
+
+    /**
+     * If transactions are used together with the cache, we have to make sure, that the cache
+     * gets cleared, if a transaction gets rolled back.
+     */
+    public function testTransactionCacheInteractionRollback()
+    {
+        // make sure table is not there
+        $this->assertEquals(0, \count($this->fixture->fetchList('SHOW TABLES LIKE "transactionTest"')));
+
+        /*
+         * transaction started: level 0
+         */
+        $this->fixture->beginTransaction();
+        $this->assertTrue($this->fixture->inTransaction());
+
+        // create table
+        $this->fixture->simpleQuery('CREATE TABLE transactionTest (
+            id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(30) NOT NULL
+        )');
+
+        // table created?
+        $this->assertEquals(1, \count($this->fixture->fetchList('SHOW TABLES LIKE "transactionTest"')));
+
+        $this->fixture->simpleQuery('INSERT INTO transactionTest (id, name) VALUES (1, "baz-level0")');
+
+        $this->assertEquals(1, \count($this->fixture->fetchList('SELECT * FROM transactionTest')));
+
+        $this->fixture->rollback();
+
         $this->assertEquals(0, \count($this->fixture->fetchList('SELECT * FROM transactionTest')));
     }
 }

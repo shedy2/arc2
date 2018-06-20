@@ -3,35 +3,16 @@
 namespace Tests\db_adapter_depended\src\ARC2\Store\Adapter;
 
 use ARC2\Store\Adapter\CachedPDOAdapter;
-use Tests\ARC2_TestCase;
+use Symfony\Component\Cache\Simple\ArrayCache;
 
-class CachedPDOAdapterTest extends ARC2_TestCase
+class CachedPDOAdapterTest extends PDOAdapterTest
 {
-    public function setUp()
+    protected function getInstance()
     {
-        // stop, if pdo_mysql is not available
-        if (false == \extension_loaded('pdo_mysql')) {
-            $this->markTestSkipped('Test skipped, because extension pdo_mysql is not installed.');
-        }
-
-        // stop, if pdo_db_protocol is not set in dbConfig
-        if (false == isset($this->dbConfig['db_pdo_protocol'])) {
-            $this->markTestSkipped(
-                'Test skipped, because db_pdo_protocol is not set. Its ok, if this happens in unit test environment.'
-            );
-        }
-
-        parent::setUp();
-
         $this->dbConfig['cache_enabled'] = true;
+        $this->dbConfig['cache_instance'] = new ArrayCache();
 
-        $this->fixture = new CachedPDOAdapter($this->dbConfig);
-
-        // remove all tables
-        $tables = $this->fixture->fetchList('SHOW TABLES');
-        foreach($tables as $table) {
-            $this->fixture->simpleQuery('DROP TABLE '. $table['Tables_in_'.$this->dbConfig['db_name']]);
-        }
+        return new CachedPDOAdapter($this->dbConfig);
     }
 
     public function testFetchRow()
