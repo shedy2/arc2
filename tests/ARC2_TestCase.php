@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use Symfony\Component\Cache\Simple\CacheInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class ARC2_TestCase extends \PHPUnit\Framework\TestCase
 {
