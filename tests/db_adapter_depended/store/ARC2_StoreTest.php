@@ -317,34 +317,6 @@ XML;
     }
 
     /*
-     * Tests for enableFulltextSearch
-     */
-
-    public function testEnableFulltextSearch()
-    {
-        $res1 = $this->fixture->enableFulltextSearch();
-        $res2 = $this->fixture->disableFulltextSearch();
-
-        // expect a different result, depending on the MySQL version, because
-        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
-        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
-        // MariaDB is also affected.
-        if ((
-                'mysql' == $this->fixture->getDBObject()->getDBSName()
-                && version_compare('5.6', $this->fixture->getDBObject()->getServerVersion(), '>')
-            ) || 'mariadb' == $this->fixture->getDBObject()->getDBSName()) {
-            $this->assertEquals(0, $res1);
-            $this->assertEquals(0, $res2);
-        } else {
-            $this->assertEquals(1, $res1);
-            $this->assertEquals(1, $res2);
-        }
-
-        $this->assertEquals(0, $this->fixture->a['db_object']->getErrorCode());
-        $this->assertEquals('', $this->fixture->a['db_object']->getErrorMessage());
-    }
-
-    /*
      * Tests for getDBVersion
      */
 

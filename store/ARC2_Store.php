@@ -199,63 +199,6 @@ class ARC2_Store extends ARC2_Class
         return $this->$var_name;
     }
 
-    public function hasFulltextIndex()
-    {
-        if (!isset($this->has_fulltext_index)) {
-            $this->has_fulltext_index = 0;
-            $tbl = $this->getTablePrefix().'o2val';
-
-            $rows = $this->db->fetchList('SHOW INDEX FROM '.$tbl);
-            foreach($rows as $row) {
-                if ('val' != $row['Column_name']) {
-                    continue;
-                }
-                if ('FULLTEXT' != $row['Index_type']) {
-                    continue;
-                }
-                $this->has_fulltext_index = 1;
-                break;
-            }
-        }
-
-        return $this->has_fulltext_index;
-    }
-
-    public function enableFulltextSearch()
-    {
-        if ($this->hasFulltextIndex()) {
-            return 1;
-        }
-        $tbl = $this->getTablePrefix().'o2val';
-
-        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
-        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
-        // We execute this only on MySQL 5.6 or higher.
-        if ((
-                'mysql' == $this->db->getDBSName()
-                && version_compare('5.6', $this->db->getServerVersion(), '<=')
-            ) || 'mariadb' == $this->db->getDBSName()) {
-            $this->db->simpleQuery('CREATE FULLTEXT INDEX vft ON '.$tbl.'(val(128))');
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    public function disableFulltextSearch()
-    {
-        // MySQL 5.5 does not support FULLTEXT for InnoDB based on:
-        // https://dev.mysql.com/doc/refman/5.5/en/fulltext-restrictions.html
-        // We execute this only on MySQL 5.6 or higher.
-        if ('mysql' == $this->db->getDBSName() && '5.6' <= $this->db->getServerVersion()) {
-            if (!$this->hasFulltextIndex()) {
-                return 1;
-            }
-            $tbl = $this->getTablePrefix().'o2val';
-            $this->db->simpleQuery('DROP INDEX vft ON '.$tbl);
-        }
-    }
-
     public function countDBProcesses()
     {
         return $this->db->getNumberOfRows('SHOW PROCESSLIST');
