@@ -116,7 +116,7 @@ class PDOAdapter extends AbstractAdapter
     public function escape($value)
     {
         // quote surronds the string with ', but using trim aligns the result
-        return trim($this->db->quote($value), "'");
+        return \trim($this->db->quote($value), "'");
     }
 
     /**
@@ -136,7 +136,6 @@ class PDOAdapter extends AbstractAdapter
             $this->connect();
         }
 
-        $row = false;
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll();
@@ -161,8 +160,8 @@ class PDOAdapter extends AbstractAdapter
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll();
-        if (0 < count($rows)) {
-            $row = array_values($rows)[0];
+        if (0 < \count($rows)) {
+            $row = \array_values($rows)[0];
         }
         $stmt->closeCursor();
 
@@ -203,13 +202,13 @@ class PDOAdapter extends AbstractAdapter
     public function getDBSName()
     {
         if (null == $this->db) {
-            return null;
+            return;
         }
 
-        $clientVersion = strtolower($this->db->getAttribute(\PDO::ATTR_SERVER_VERSION));
-        if (false !== strpos($clientVersion, 'mariadb')) {
+        $clientVersion = \strtolower($this->db->getAttribute(\PDO::ATTR_CLIENT_VERSION));
+        if (false !== \strpos($clientVersion, 'mariadb')) {
             $return = 'mariadb';
-        } elseif (false !== strpos($clientVersion, 'mysql')) {
+        } elseif (false !== \strpos($clientVersion, 'mysql')) {
             $return = 'mysql';
         } else {
             $return = null;
@@ -232,7 +231,7 @@ class PDOAdapter extends AbstractAdapter
 
     public function getServerInfo()
     {
-        return $this->db->getAttribute(constant('PDO::ATTR_CLIENT_VERSION'));
+        return $this->db->getAttribute(\constant('PDO::ATTR_CLIENT_VERSION'));
     }
 
     /**
@@ -270,7 +269,7 @@ class PDOAdapter extends AbstractAdapter
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
-        $rowCount = count($stmt->fetchAll());
+        $rowCount = \count($stmt->fetchAll());
         $stmt->closeCursor();
         return $rowCount;
     }
@@ -329,20 +328,21 @@ class PDOAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $sql DELETE Query
+     * Encapsulates internal PDO::exec call. This allows us to extend it, e.g. with caching functionality.
      *
-     * @return int Number of affected rows
+     * @param string $sql
+     *
+     * @return int Number of affected rows.
      */
-    public function deleteQuery($sql)
+    public function exec($sql)
     {
         // save query
         $this->queries[] = [
             'query' => $sql,
-            'by_function' => 'deleteQuery'
+            'by_function' => 'exec'
         ];
 
-        $affectedRows = $this->db->exec($sql);
-        return $affectedRows;
+        return $this->db->exec($sql);
     }
 
     /*

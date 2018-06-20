@@ -63,16 +63,16 @@ abstract class AbstractAdapterTest extends ARC2_TestCase
     }
 
     /*
-     * Tests for deleteQuery
+     * Tests for exec
      */
 
-    public function testDeleteQuery()
+    public function testExec()
     {
         $this->fixture->simpleQuery('CREATE TABLE users (id INT(6), name VARCHAR(30) NOT NULL)');
         $this->fixture->simpleQuery('INSERT INTO users (id, name) VALUE (1, "foobar");');
         $this->fixture->simpleQuery('INSERT INTO users (id, name) VALUE (2, "foobar2");');
 
-        $this->assertEquals(2, $this->fixture->deleteQuery('DELETE FROM users;'));
+        $this->assertEquals(2, $this->fixture->exec('DELETE FROM users;'));
     }
 
     /*
@@ -167,6 +167,8 @@ abstract class AbstractAdapterTest extends ARC2_TestCase
 
     public function testGetDBSName()
     {
+        // connect and check
+        $this->fixture->connect();
         $this->assertTrue(in_array($this->fixture->getDBSName(), array('mariadb', 'mysql')));
     }
 

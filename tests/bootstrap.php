@@ -32,11 +32,23 @@ if (false == isset($dbConfig['db_table_prefix'])) {
 }
 
 // set DB adapter (see related phpunit-xx.xml file), possible values: mysqli, pdo
-$dbConfig['db_adapter'] = getenv('DB_ADAPTER');
 if ('pdo' == getenv('DB_ADAPTER')) {
     if (!empty(getenv('DB_PDO_PROTOCOL'))) {
+        $dbConfig['db_adapter'] = 'pdo';
         $dbConfig['db_pdo_protocol'] = getenv('DB_PDO_PROTOCOL');
     } else {
         throw new \Exception('Environment variable DB_PDO_PROTOCOL not set. Possible values are: mysql');
     }
+} else {
+    $dbConfig['db_adapter'] = 'mysqli';
+}
+
+/*
+ * set cache enable
+ *
+ * if enabled, we use an instance of ArrayCache which is very fast
+ */
+if (true == getenv('CACHE_ENABLED')) {
+    $dbConfig['cache_enabled'] = true;
+    $dbConfig['cache_instance'] = new Symfony\Component\Cache\Simple\ArrayCache();
 }
