@@ -118,16 +118,12 @@ class ARC2_StoreDeleteQueryHandler extends ARC2_StoreQueryHandler
                 continue;
             }
             if ($gq) {
-                $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'g2t' : 'DELETE G';
-                $sql .= '
-          FROM '.$tbl_prefix.'g2t G
-          JOIN '.$this->getTripleTable().' T ON (T.t = G.t'.$gq.')
-          WHERE '.$q.'
-        ';
+                $sql = 'DELETE G
+                          FROM '.$tbl_prefix.'g2t G JOIN '.$this->getTripleTable().' T ON (T.t = G.t'.$gq.')
+                         WHERE '.$q;
                 $this->refs_deleted = 1;
             } else {/* triples only */
-                $sql = ($dbv < '04-01') ? 'DELETE '.$this->getTripleTable() : 'DELETE T';
-                $sql .= ' FROM '.$this->getTripleTable().' T WHERE '.$q;
+                $sql = 'DELETE T FROM '.$this->getTripleTable().' T WHERE '.$q;
             }
             $r += $this->store->a['db_object']->exec($sql);
             if (!empty($this->store->a['db_object']->getErrorMessage())) {
@@ -159,35 +155,28 @@ class ARC2_StoreDeleteQueryHandler extends ARC2_StoreQueryHandler
         $tbl_prefix = $this->store->getTablePrefix();
         $dbv = $this->store->getDBVersion();
         /* check for unconnected triples */
-        $sql = '
-      SELECT T.t FROM '.$tbl_prefix.'triple T LEFT JOIN '.$tbl_prefix.'g2t G ON ( G.t = T.t )
-      WHERE G.t IS NULL LIMIT 1
-    ';
+        $sql = 'SELECT T.t
+                  FROM '.$tbl_prefix.'triple T LEFT JOIN '.$tbl_prefix.'g2t G ON ( G.t = T.t )
+                 WHERE G.t IS NULL LIMIT 1';
         $numRows = $this->store->a['db_object']->getNumberOfRows($sql);
+
         if (0 < $numRows) {
             /* delete unconnected triples */
-            $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'triple' : 'DELETE T';
-            $sql .= '
-        FROM '.$tbl_prefix.'triple T
-        LEFT JOIN '.$tbl_prefix.'g2t G ON (G.t = T.t)
-        WHERE G.t IS NULL
-      ';
+            $sql = 'DELETE T
+                      FROM '.$tbl_prefix.'triple T LEFT JOIN '.$tbl_prefix.'g2t G ON (G.t = T.t)
+                     WHERE G.t IS NULL';
             $this->store->a['db_object']->simpleQuery($sql);
         }
         /* check for unconnected graph refs */
         if ((1 == rand(1, 10))) {
-            $sql = '
-                SELECT G.g FROM '.$tbl_prefix.'g2t G LEFT JOIN '.$tbl_prefix.'triple T ON ( T.t = G.t )
-                WHERE T.t IS NULL LIMIT 1
-            ';
+            $sql = 'SELECT G.g
+                      FROM '.$tbl_prefix.'g2t G LEFT JOIN '.$tbl_prefix.'triple T ON ( T.t = G.t )
+                     WHERE T.t IS NULL LIMIT 1';
             if (0 < $this->store->a['db_object']->getNumberOfRows($sql)) {
                 /* delete unconnected graph refs */
-                $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'g2t' : 'DELETE G';
-                $sql .= '
-                    FROM '.$tbl_prefix.'g2t G
-                    LEFT JOIN '.$tbl_prefix.'triple T ON (T.t = G.t)
-                    WHERE T.t IS NULL
-                ';
+                $sql = 'DELETE G
+                          FROM '.$tbl_prefix.'g2t G LEFT JOIN '.$tbl_prefix.'triple T ON (T.t = G.t)
+                         WHERE T.t IS NULL';
                 $this->store->a['db_object']->simpleQuery($sql);
              }
         }
@@ -205,32 +194,24 @@ class ARC2_StoreDeleteQueryHandler extends ARC2_StoreQueryHandler
         $dbv = $this->store->getDBVersion();
 
         /* o2val */
-        $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'o2val' : 'DELETE V';
-        $sql .= '
-      FROM '.$tbl_prefix.'o2val V
-      LEFT JOIN '.$tbl_prefix.'triple T ON (T.o = V.id)
-      WHERE T.t IS NULL
-    ';
+        $sql = 'DELETE V
+                  FROM '.$tbl_prefix.'o2val V LEFT JOIN '.$tbl_prefix.'triple T ON (T.o = V.id)
+                 WHERE T.t IS NULL';
         $this->store->a['db_object']->simpleQuery($sql);
 
         /* s2val */
-        $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'s2val' : 'DELETE V';
-        $sql .= '
-      FROM '.$tbl_prefix.'s2val V
-      LEFT JOIN '.$tbl_prefix.'triple T ON (T.s = V.id)
-      WHERE T.t IS NULL
-    ';
+        $sql = 'DELETE V
+                  FROM '.$tbl_prefix.'s2val V LEFT JOIN '.$tbl_prefix.'triple T ON (T.s = V.id)
+                 WHERE T.t IS NULL';
         $this->store->a['db_object']->simpleQuery($sql);
 
         /* id2val */
-        $sql = ($dbv < '04-01') ? 'DELETE '.$tbl_prefix.'id2val' : 'DELETE V';
-        $sql .= '
-      FROM '.$tbl_prefix.'id2val V
-      LEFT JOIN '.$tbl_prefix.'g2t G ON (G.g = V.id)
-      LEFT JOIN '.$tbl_prefix.'triple T1 ON (T1.p = V.id)
-      LEFT JOIN '.$tbl_prefix.'triple T2 ON (T2.o_lang_dt = V.id)
-      WHERE G.g IS NULL AND T1.t IS NULL AND T2.t IS NULL
-    ';
+        $sql = 'DELETE V
+                  FROM '.$tbl_prefix.'id2val V
+                        LEFT JOIN '.$tbl_prefix.'g2t G ON (G.g = V.id)
+                        LEFT JOIN '.$tbl_prefix.'triple T1 ON (T1.p = V.id)
+                        LEFT JOIN '.$tbl_prefix.'triple T2 ON (T2.o_lang_dt = V.id)
+                 WHERE G.g IS NULL AND T1.t IS NULL AND T2.t IS NULL';
         // TODO was commented out before. could this be a problem?
         $this->store->a['db_object']->simpleQuery($sql);
 

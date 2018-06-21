@@ -17,6 +17,7 @@ namespace ARC2\Store\Adapter;
 class PDOAdapter extends AbstractAdapter
 {
     protected $transactionCounter = 0;
+    protected $serverVersion;
 
     public function checkRequirements()
     {
@@ -240,9 +241,12 @@ class PDOAdapter extends AbstractAdapter
      */
     public function getServerVersion()
     {
-        $v = $this->fetchRow('select version()');
+        if (null == $this->serverVersion) {
+            $this->serverVersion = $this->fetchRow('select version()');
+            $this->serverVersion = $this->serverVersion['version()'];
+        }
 
-        return $v['version()'];
+        return $this->serverVersion;
     }
 
     public function getErrorCode()

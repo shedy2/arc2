@@ -94,6 +94,8 @@ class ARC2_StoreLoadQueryHandler extends ARC2_StoreQueryHandler
         }
         $this->store->releaseLock();
         //$this->dropMergeTable();
+        // TODO can this be removed? ==> $this->dropMergeTable();
+        // TODO make that if predicatable
         if ((1 == rand(1, 100))) {
             $this->store->optimizeTables();
         }

@@ -73,9 +73,8 @@ class ARC2_StoreQueryHandler extends ARC2_Class
         UNIQUE KEY (t), '.$index_code.' KEY (misc)
       )
     ';
-        $v = $this->store->getDBVersion();
-        $sql .= (($v < '04-01-00') && ($v >= '04-00-18')) ? 'ENGINE' : (($v >= '04-01-02') ? 'ENGINE' : 'TYPE');
-        $sql .= '=MERGE UNION=('.$prefix.'triple';
+
+        $sql .= 'ENGINE=MERGE UNION=('.$prefix.'triple';
         foreach ($split_ps as $pos => $p) {
             $sql .= ','.$prefix.'triple_'.abs(crc32($p));
         }
