@@ -362,6 +362,34 @@ class InsertIntoQueryTest extends ARC2_TestCase
         );
     }
 
+    // this case demonstrates, that executing 4 insert into queries does NOT lead to 4 triples.
+    // but if you group them into 1 query, it works. using transaction does not help.
+    public function testInsertIntoTripleAreIgnored()
+    {
+        $this->assertEquals(0, \count($this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']));
+
+        // test data
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <http://www.w3.org/1999/02/22-rdf-syntax-ns#1> <http://foo#a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#3>.
+        }');
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <http://www.w3.org/1999/02/22-rdf-syntax-ns#1> <http://bar#b> "hi"^^<http://www.w3.org/2001/XMLSchema#string>.
+        }');
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <http://xmlns.com/foaf/0.1/Person1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#c> "de"@de.
+        }');
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <http://xmlns.com/foaf/0.1/Person2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#d> "en"^^<http://www.w3.org/2001/XMLSchema#string>.
+        }');
+
+        $this->assertEquals(1, \count($this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']));
+
+        $this->markTestSkipped('Executing INSERT INTO queries one after another does not work and you only got 1 triple in the end.');
+    }
+
     public function testInsertIntoWhere()
     {
         // test data
