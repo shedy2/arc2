@@ -60,7 +60,7 @@ class ARC2_Store extends ARC2_Class
         if (!isset($this->tbl_prefix)) {
             $r = $this->v('db_table_prefix', '', $this->a);
             $r .= $r ? '_' : '';
-            $r .= $this->getName().'_';
+            $r .= $this->v('store_name', 'arc', $this->a).'_';
             $this->tbl_prefix = $r;
         }
 

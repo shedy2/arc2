@@ -14,7 +14,14 @@ class InsertIntoQueryTest extends ARC2_TestCase
         parent::setUp();
 
         $this->fixture = \ARC2::getStore($this->dbConfig);
-        $this->fixture->drop();
+        $this->fixture->createDBCon();
+
+        // clear whole DB
+        $tables = $this->fixture->getDBObject()->fetchList('SHOW TABLES');
+        foreach($tables as $table) {
+            $this->fixture->getDBObject()->simpleQuery('DROP TABLE '. $table['Tables_in_'.$this->dbConfig['db_name']]);
+        }
+
         $this->fixture->setup();
     }
 
@@ -388,6 +395,61 @@ class InsertIntoQueryTest extends ARC2_TestCase
         $this->assertEquals(1, \count($this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']));
 
         $this->markTestSkipped('Executing INSERT INTO queries one after another does not work and you only got 1 triple in the end.');
+    }
+
+    // check that the same triple can not get created multiple times
+    public function testInsertIntoTripleDoublings()
+    {
+        $this->assertEquals(0, \count($this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']));
+
+        // test data
+        $hash = \hash('sha512', \microtime(true));
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <urn:1> <urn:2> "'.$hash.'" .
+            <urn:1> <urn:2> "'.$hash.'" .
+
+            <urn:a> <urn:b> <urn:3> .
+            <urn:a> <urn:b> <urn:3> .
+        }');
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <urn:1> <urn:2> "'.$hash.'" .
+            <urn:a> <urn:b> <urn:3> .
+        }');
+
+        $this->fixture->query('INSERT INTO <http://knorke/testgraph/> {
+            <urn:1> <urn:2> "'.$hash.'" .
+            <urn:a> <urn:b> <urn:3> .
+        }');
+
+        $this->assertEquals(
+            [
+                [
+                    's' => 'urn:1',
+                    's type' => 'uri',
+                    'p' => 'urn:2',
+                    'p type' => 'uri',
+                    'o' => $hash,
+                    'o type' => 'literal',
+                ],
+                [
+                    's' => 'urn:a',
+                    's type' => 'uri',
+                    'p' => 'urn:b',
+                    'p type' => 'uri',
+                    'o' => 'urn:3',
+                    'o type' => 'uri',
+                ]
+            ],
+            $this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']
+        );
+
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_g2t')));
+        $this->assertEquals(4, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_id2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_s2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_o2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_triple')));
     }
 
     public function testInsertIntoWhere()
