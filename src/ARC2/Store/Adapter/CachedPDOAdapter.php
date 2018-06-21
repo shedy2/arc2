@@ -122,7 +122,7 @@ class CachedPDOAdapter extends PDOAdapter
     protected function queryChangesDb($sql)
     {
         $sqlPart = substr(trim($sql), 0, 4);
-        return true === in_array($sqlPart, ['CREA', 'DROP', 'DELE', 'INSE', 'RENA', 'UPDA',]);
+        return true === in_array($sqlPart, ['CREA', 'DROP', 'DELE', 'INSE', 'RENA', 'TRUN', 'UPDA',]);
     }
 
     public function simpleQuery($sql)

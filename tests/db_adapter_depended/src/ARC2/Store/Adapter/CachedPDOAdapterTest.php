@@ -57,7 +57,8 @@ class CachedPDOAdapterTest extends PDOAdapterTest
         $this->assertEquals($users, $this->fixture->fetchList($selectQuery));
     }
 
-    public function testCacheInvalidationIfDBChanges()
+    // check invalidation on DELETE FROM
+    public function testCacheInvalidationIfDBChangesDeleteFrom()
     {
         // create test data
         $this->fixture->simpleQuery('CREATE TABLE users (id INT(6), name VARCHAR(30) NOT NULL)');
@@ -71,6 +72,25 @@ class CachedPDOAdapterTest extends PDOAdapterTest
 
         // change table and therefore the DB => invalidation of the cache
         $this->fixture->exec('DELETE FROM users WHERE id = 1');
+
+        $this->assertFalse($this->fixture->getCacheInstance()->has(hash('sha1', $selectQuery)));
+    }
+
+    // check invalidation on TRUNCATE
+    public function testCacheInvalidationIfDBChanges()
+    {
+        // create test data
+        $this->fixture->simpleQuery('CREATE TABLE users (id INT(6), name VARCHAR(30) NOT NULL)');
+        $this->fixture->simpleQuery('INSERT INTO users (id, name) VALUE (1, "foobar");');
+        $this->fixture->simpleQuery('INSERT INTO users (id, name) VALUE (2, "foobar2");');
+
+        $selectQuery = 'SELECT * FROM users';
+
+        $users = $this->fixture->fetchList($selectQuery);
+        $this->assertTrue($this->fixture->getCacheInstance()->has(hash('sha1', $selectQuery)));
+
+        // change table and therefore the DB => invalidation of the cache
+        $this->fixture->exec('TRUNCATE users');
 
         $this->assertFalse($this->fixture->getCacheInstance()->has(hash('sha1', $selectQuery)));
     }
