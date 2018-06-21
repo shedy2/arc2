@@ -375,8 +375,8 @@ class ARC2_Store extends ARC2_Class
         $this->db->simpleQuery('LOCK TABLES '.$this->getTablePrefix().'setting WRITE');
         /* queue */
         $vals = $this->getSetting('query_queue', []);
-        $pos = array_search($t, $vals);
-        $queue = ($pos < (count($vals) - 1)) ? array_slice($vals, $pos + 1) : [];
+        $pos = \array_search($t, $vals);
+        $queue = ($pos < (count($vals) - 1)) ? \array_slice($vals, $pos + 1) : [];
         $this->setSetting('query_queue', $queue);
         $this->db->simpleQuery('UNLOCK TABLES');
     }
@@ -477,7 +477,7 @@ class ARC2_Store extends ARC2_Class
 
     public function replicateTo($name)
     {
-        $conf = array_merge($this->a, ['store_name' => $name]);
+        $conf = \array_merge($this->a, ['store_name' => $name]);
         $new_store = ARC2::getStore($conf);
         $new_store->setUp();
         $new_store->reset();
@@ -540,7 +540,7 @@ class ARC2_Store extends ARC2_Class
 
         $infos['result_format'] = $result_format;
 
-        if (!isset($p) || 0 == count($errors)) {
+        if (!isset($p) || 0 == \count($errors)) {
             $qt = $infos['query']['type'];
             if (!in_array($qt, ['select', 'ask', 'describe', 'construct', 'load', 'insert', 'delete', 'dump'])) {
                 return $this->addError('Unsupported query type "'.$qt.'"');
@@ -628,7 +628,7 @@ class ARC2_Store extends ARC2_Class
                 $trigger .= !preg_match('/Trigger$/', $trigger) ? 'Trigger' : '';
                 if (ARC2::inc(ucfirst($trigger), $trigger_inc_path)) {
                     $cls = 'ARC2_'.ucfirst($trigger);
-                    $config = array_merge($this->a, ['query_infos' => $infos]);
+                    $config = \array_merge($this->a, ['query_infos' => $infos]);
                     $trigger_obj = new $cls($config, $this);
                     if (method_exists($trigger_obj, 'go')) {
                         $r['trigger_results'][] = $trigger_obj->go();
@@ -673,7 +673,7 @@ class ARC2_Store extends ARC2_Class
             $rows = $this->db->fetchList(
                 'SELECT id, val FROM '.$this->getTablePrefix().$tbl." WHERE val_hash = '".$this->getValueHash($val)."' ORDER BY id"
             );
-            if (is_array($rows) && 0 < count($rows)) {
+            if (is_array($rows) && 0 < \count($rows)) {
                 foreach($rows as $row) {
                     if ($row['val'] == $val) {
                         $r = $row['id'];
@@ -842,7 +842,7 @@ class ARC2_Store extends ARC2_Class
 
     public function getLabelProps()
     {
-        return array_merge(
+        return \array_merge(
             $this->v('rdf_label_properties', [], $this->a),
             [
                 'http://www.w3.org/2000/01/rdf-schema#label',

@@ -60,7 +60,7 @@ class ARC2_StoreTableManager extends ARC2_Store
     {
         /* keep in sync with merge def in StoreQueryHandler ! */
         $indexes = $this->v('store_indexes', ['sp (s,p)', 'os (o,s)', 'po (p,o)'], $this->a);
-        $index_code = $indexes ? 'KEY '.implode(', KEY ', $indexes).', ' : '';
+        $index_code = $indexes ? 'KEY '.\implode(', KEY ', $indexes).', ' : '';
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().$suffix.' (
         t INT(10) UNSIGNED NOT NULL,
@@ -175,7 +175,7 @@ class ARC2_StoreTableManager extends ARC2_Store
         /* object value index, e.g. "KEY v (val(64))" and/or "FULLTEXT KEY vft (val)" */
         $val_index = $this->v('store_object_index', 'KEY v (val(64))', $this->a);
         if ($val_index) {
-            $val_index = ', '.ltrim($val_index, ',');
+            $val_index = ', '.\ltrim($val_index, ',');
         }
         $sql = '
       CREATE TABLE IF NOT EXISTS '.$this->getTablePrefix().'o2val (
@@ -218,8 +218,8 @@ class ARC2_StoreTableManager extends ARC2_Store
         $tbl_prefix = $this->getTablePrefix();
         $tbls = $this->getTables();
         foreach ($tbls as $suffix) {
-            if (preg_match('/^(triple|g2t|id2val|s2val|o2val)/', $suffix, $m)) {
-                $mthd = 'extend'.ucfirst($m[1]).'TableColumns';
+            if (\preg_match('/^(triple|g2t|id2val|s2val|o2val)/', $suffix, $m)) {
+                $mthd = 'extend'.\ucfirst($m[1]).'TableColumns';
                 $this->$mthd($suffix);
             }
         }
@@ -229,8 +229,8 @@ class ARC2_StoreTableManager extends ARC2_Store
     {
         $old_ps = $this->getSetting('split_predicates', []);
         $new_ps = $this->retrieveSplitPredicates();
-        $add_ps = array_diff($new_ps, $old_ps);
-        $del_ps = array_diff($old_ps, $new_ps);
+        $add_ps = \array_diff($new_ps, $old_ps);
+        $del_ps = \array_diff($old_ps, $new_ps);
         $final_ps = [];
         foreach ($del_ps as $p) {
             if (!$this->unsplitPredicate($p)) {
@@ -247,7 +247,7 @@ class ARC2_StoreTableManager extends ARC2_Store
 
     public function unsplitPredicate($p)
     {
-        $suffix = 'triple_'.abs(crc32($p));
+        $suffix = 'triple_'.\abs(\crc32($p));
         $old_tbl = $this->getTablePrefix().$suffix;
         $new_tbl = $this->getTablePrefix().'triple';
         $p_id = $this->getTermID($p, 'p');
@@ -266,7 +266,7 @@ class ARC2_StoreTableManager extends ARC2_Store
 
     public function splitPredicate($p)
     {
-        $suffix = 'triple_'.abs(crc32($p));
+        $suffix = 'triple_'.\abs(\crc32($p));
         $this->createTripleTable($suffix);
         $old_tbl = $this->getTablePrefix().'triple';
         $new_tbl = $this->getTablePrefix().$suffix;
@@ -289,7 +289,7 @@ class ARC2_StoreTableManager extends ARC2_Store
     public function retrieveSplitPredicates()
     {
         $r = $this->split_predicates;
-        $limit = $this->max_split_tables - count($r);
+        $limit = $this->max_split_tables - \count($r);
         $q = 'SELECT ?p COUNT(?p) AS ?pc WHERE { ?s ?p ?o } GROUP BY ?p ORDER BY DESC(?pc) LIMIT '.$limit;
         $rows = $this->query($q, 'rows');
         foreach ($rows as $row) {

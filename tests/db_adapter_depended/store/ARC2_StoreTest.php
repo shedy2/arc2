@@ -514,7 +514,7 @@ XML;
     public function testInsertSaftRegressionTest1()
     {
         $res = $this->fixture->query('SELECT * FROM <http://example.com/> WHERE { ?s ?p ?o. } ');
-        $this->assertEquals(0, count($res['result']['rows']));
+        $this->assertEquals(0, \count($res['result']['rows']));
 
         $this->fixture->insert(
             file_get_contents(__DIR__.'/../../data/nt/saft-arc2-addition-regression1.nt'),
@@ -522,10 +522,10 @@ XML;
         );
 
         $res1 = $this->fixture->query('SELECT * FROM <http://example.com/> WHERE { ?s ?p ?o. } ');
-        $this->assertEquals(442, count($res1['result']['rows']));
+        $this->assertEquals(442, \count($res1['result']['rows']));
 
         $res2 = $this->fixture->query('SELECT * WHERE { ?s ?p ?o. } ');
-        $this->assertEquals(442, count($res2['result']['rows']));
+        $this->assertEquals(442, \count($res2['result']['rows']));
     }
 
     /**
@@ -540,13 +540,13 @@ XML;
         $res = $this->fixture->query('INSERT INTO <http://localhost/Saft/TestGraph/> {<http://foo/1> <http://foo/2> <http://foo/3> . }');
 
         $res1 = $this->fixture->query('SELECT * FROM <http://localhost/Saft/TestGraph/> WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res1['result']['rows']));
+        $this->assertEquals(1, \count($res1['result']['rows']));
 
         $res2 = $this->fixture->query('SELECT * WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res2['result']['rows']));
+        $this->assertEquals(1, \count($res2['result']['rows']));
 
         $res2 = $this->fixture->query('SELECT ?s ?p ?o WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res2['result']['rows']));
+        $this->assertEquals(1, \count($res2['result']['rows']));
     }
 
     /**
@@ -570,7 +570,7 @@ XML;
         );
 
         $res = $this->fixture->query('SELECT * FROM <http://second-graph/> WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res['result']['rows']));
+        $this->assertEquals(1, \count($res['result']['rows']));
     }
 
     public function testMultipleInsertQuerysInDifferentGraphs()
@@ -580,13 +580,13 @@ XML;
         $this->fixture->query('INSERT INTO <http://graph2/> {<http://foo/1> <http://foo/2> <http://foo/3> . }');
 
         $res = $this->fixture->query('SELECT * FROM <http://graph1/> WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res['result']['rows']));
+        $this->assertEquals(1, \count($res['result']['rows']));
 
         $res = $this->fixture->query('SELECT * FROM <http://graph2/> WHERE {?s ?p ?o.}');
-        $this->assertEquals(1, count($res['result']['rows']));
+        $this->assertEquals(1, \count($res['result']['rows']));
 
         $res = $this->fixture->query('SELECT * WHERE {?s ?p ?o.}');
-        $this->assertEquals(3, count($res['result']['rows']));
+        $this->assertEquals(3, \count($res['result']['rows']));
 
         $this->markTestSkipped(
             'Adding the same triple into two graphs does not work.'

@@ -555,7 +555,7 @@ class ARC2_Class {
       ' . ($offset ? 'OFFSET ' . $offset : '') . '
     ';
     $rows = $store->query($q, 'rows');
-    $tc = count($rows);
+    $tc = \count($rows);
     $full_tc = $tc + $offset;
     $mode = $offset ? 'ab' : 'wb';
     $fp = fopen($target_path, $mode);

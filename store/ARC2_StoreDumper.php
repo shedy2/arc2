@@ -213,8 +213,8 @@ class ARC2_StoreDumper extends ARC2_Class
             '%1A' => ',',
             '%1F' => '',
         ];
-        $froms = array_keys($mappings);
-        $tos = array_values($mappings);
+        $froms = \array_keys($mappings);
+        $tos = \array_values($mappings);
         foreach ($froms as $i => $from) {
             $froms[$i] = urldecode($from);
         }
