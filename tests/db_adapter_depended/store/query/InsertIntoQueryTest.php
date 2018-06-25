@@ -445,11 +445,11 @@ class InsertIntoQueryTest extends ARC2_TestCase
             $this->fixture->query('SELECT * FROM <http://knorke/testgraph/> WHERE {?s ?p ?o}')['result']['rows']
         );
 
-        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_g2t')));
-        $this->assertEquals(4, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_id2val')));
-        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_s2val')));
-        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_o2val')));
-        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM pref_store1_triple')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM '.$this->getSqlTablePrefix().'g2t')));
+        $this->assertEquals(4, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM '.$this->getSqlTablePrefix().'id2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM '.$this->getSqlTablePrefix().'s2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM '.$this->getSqlTablePrefix().'o2val')));
+        $this->assertEquals(2, \count($this->fixture->getDBObject()->fetchList('SELECT * FROM '.$this->getSqlTablePrefix().'triple')));
     }
 
     public function testInsertIntoWhere()

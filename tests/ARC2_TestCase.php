@@ -41,4 +41,16 @@ class ARC2_TestCase extends \PHPUnit\Framework\TestCase
 
         parent::tearDown();
     }
+
+    /**
+     * Depending on the DB config returns current table prefix. It consists of table prefix and store name, if available.
+     *
+     * @return string
+     */
+    protected function getSqlTablePrefix()
+    {
+        $prefix = isset($this->dbConfig['db_table_prefix']) ? $this->dbConfig['db_table_prefix'].'_' : '';
+        $prefix .= isset($this->dbConfig['store_name']) ? $this->dbConfig['store_name'].'_' : '';
+        return $prefix;
+    }
 }
