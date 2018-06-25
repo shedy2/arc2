@@ -154,4 +154,4 @@ Please have a look [here](doc/developer.md) to find information about maintainin
 
 For ARC2 developers we recommend this following [Docker setup](https://github.com/k00ni/PHP-Apache-MySQL-Docker). It provides a pre-configured set of software (for PHP, DBS etc.) and allows quick switches between different software versions.
 
-For more information have a look [here](https://github.com/k00ni/PHP-Apache-MySQL-Docker).
+For more information have a look [here](https://github.com/semsol/arc2/blob/3.0/doc/developer.md#docker-setup).
