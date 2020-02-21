@@ -1,61 +1,23 @@
 {
     "name": "semsol/arc2",
-    "type": "library",
-    "description": "ARC2 is a PHP 5.6+ library for working with RDF (It is compatible with PHP 5.3+ but old versions are no longer tested). It also provides a MySQL-based triplestore with SPARQL support.",
-    "keywords": ["rdf","sparql"],
-    "homepage": "https://github.com/semsol/arc2",
-    "license": [
-       "GPL-2.0-or-later",
-       "W3C"
-    ],
-    "support": {
-        "issues": "https://github.com/semsol/arc2/issues"
-    },
+	"type": "library",
+    "description":  "ARC2 RDF library for PHP",
+	"keywords": ["rdf","sparql"],
+	"homepage": "https://github.com/shedy2/arc2",
+    "license": "W3C",
     "authors": [
         {
             "name": "Benji Nowack",
-            "homepage": "http://bnowack.de/",
-            "role": "Creator, Developer"
-        },
-        {
-            "name": "Konrad Abicht",
-            "homepage": "https://pier-and-peer.com",
-            "email": "konrad.abicht@pier-and-peer.com",
-            "role": "Maintainer, Developer"
+            "homepage": "http://bnowack.de/"
         }
     ],
     "require": {
-        "php": ">=5.3.0",
-        "joshcam/mysqli-database-class": "2.*",
-        "symfony/cache": "3.4.*||4.*"
+        "php": ">=5.3.0"
     },
     "require-dev": {
-        "doctrine/instantiator": "1.0.*",
-        "friendsofphp/php-cs-fixer": "2.*",
         "phpunit/phpunit": "^5.0"
     },
-    "autoload": {
-        "classmap": ["parsers/", "serializers/", "store/"],
-        "files": [
-            "./ARC2.php",
-            "./ARC2_Class.php",
-            "./ARC2_getFormat.php",
-            "./ARC2_getPreferredFormat.php",
-            "./ARC2_Graph.php",
-            "./ARC2_Reader.php",
-            "./ARC2_Resource.php"
-        ],
-        "psr-4": {
-            "ARC2\\": [
-                "src/ARC2/"
-            ]
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": [
-                "tests"
-            ]
-        }
+     "autoload": {
+        "classmap": ["./","parsers/","serializers/"]
     }
 }
